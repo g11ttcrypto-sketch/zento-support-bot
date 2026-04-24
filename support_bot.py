@@ -105,4 +105,21 @@ app.add_handler(MessageHandler(filters.REPLY & filters.TEXT, admin_reply))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 app.add_handler(CommandHandler("list", list_messages))
 
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
+
+class Handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"Bot is running")
+
+def run_web():
+    server = HTTPServer(("0.0.0.0", 10000), Handler)
+    server.serve_forever()
+
+threading.Thread(target=run_web).start()
+
 app.run_polling()
+
+
