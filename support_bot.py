@@ -22,6 +22,11 @@ reply_targets = {}
 
 # ================= HANDLE USER MESSAGE =================
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    # ❗ игнорируем админа
+    if update.effective_user.id == ADMIN_ID:
+        return
+
     global message_counter
 
     user = update.effective_user
