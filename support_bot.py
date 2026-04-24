@@ -47,10 +47,14 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Мы получили сообщение 🙌\nСкоро ответим!"
     )
 
-    # кнопка
+
     keyboard = InlineKeyboardMarkup([
-        [InlineKeyboardButton("Ответить", callback_data=f"reply_{msg_id}")]
+        [
+            InlineKeyboardButton("Ответить", callback_data=f"reply_{msg_id}"),
+            InlineKeyboardButton("Закрыть", callback_data=f"close_{msg_id}")
+        ]
     ])
+
 
     # сообщение админу
     await context.bot.send_message(
@@ -73,6 +77,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     data = query.data
 
+    # ===== ОТВЕТ =====
     if data.startswith("reply_"):
         msg_id = int(data.split("_")[1])
         msg = messages_store.get(msg_id)
@@ -83,6 +88,15 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_targets[ADMIN_ID] = msg["user_id"]
 
         await query.message.reply_text("✏️ Напиши ответ пользователю:")
+
+    # ===== ЗАКРЫТИЕ =====
+    if data.startswith("close_"):
+        msg_id = int(data.split("_")[1])
+
+        if msg_id in messages_store:
+            messages_store[msg_id]["status"] = "closed"
+
+        await query.message.reply_text(f"✅ Заявка #{msg_id} закрыта")
 
 # ================= ADMIN REPLY =================
 async def admin_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -123,14 +137,19 @@ async def list_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_ID:
         return
 
+    open_msgs = [
+        (mid, msg) for mid, msg in messages_store.items()
+        if msg["status"] == "open"
+    ]
+
+    if not open_msgs:
+        await update.message.reply_text("📋 Нет открытых обращений")
+        return
+
     text = "📋 Открытые обращения:\n\n"
 
-    for mid, msg in messages_store.items():
-        if msg["status"] == "open":
-            text += f"#{mid} @{msg['username']}\n{msg['text']}\n\n"
-
-    if text.strip() == "📋 Открытые обращения:":
-        text += "Нет открытых сообщений"
+    for mid, msg in open_msgs:
+        text += f"#{mid} @{msg['username']}\n{msg['text']}\n\n"
 
     await update.message.reply_text(text)
 
