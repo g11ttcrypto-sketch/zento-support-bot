@@ -1,6 +1,6 @@
 from telegram import Update
 from telegram.ext import CommandHandler
-from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
+from telegram.ext import ApplicationBuilder, MessageHandler, ContextTypes, Updater, CommandHandler, Filters
 messages_store = {}
 message_counter = 1
 
@@ -96,12 +96,14 @@ async def list_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(text)
 
-app = ApplicationBuilder().token("8781903473:AAEPB-yBtv9ES6I4HVaZqRkUnNfaIwvO4Yc").build()
 
 
+updater = Updater("8781903473:AAEPB-yBtv9ES6I4HVaZqRkUnNfaIwvO4Yc", use_context=True)
+dp = updater.dispatcher
 
-app.add_handler(MessageHandler(filters.REPLY & filters.TEXT, admin_reply))
-app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-app.add_handler(CommandHandler("list", list_messages))
+dp.add_handler(MessageHandler(Filters.reply & Filters.text, admin_reply))
+dp.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
+dp.add_handler(CommandHandler("list", list_messages))
 
-app.run_polling()
+updater.start_polling()
+updater.idle()
