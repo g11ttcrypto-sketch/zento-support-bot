@@ -1,8 +1,10 @@
 from telegram import Update
+import os
 from telegram.ext import ApplicationBuilder, MessageHandler, CommandHandler, ContextTypes, filters
 messages_store = {}
 message_counter = 1
 
+TOKEN = os.getenv("BOT_TOKEN")
 
 ADMIN_ID = 1346025315
 
@@ -97,7 +99,7 @@ async def list_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 
-app = ApplicationBuilder().token("8781903473:AAEPB-yBtv9ES6I4HVaZqRkUnNfaIwvO4Yc").build()
+app = ApplicationBuilder().token(TOKEN).build()
 
 app.add_handler(MessageHandler(filters.REPLY & filters.TEXT, admin_reply))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
